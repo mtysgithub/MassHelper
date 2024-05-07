@@ -62,6 +62,7 @@ public class MassHelper : ModuleRules
 				"StructUtils",
 				"ZoneGraph",
 				"ZoneGraphDebug",
+				"Json"
 			}
 			);
 			

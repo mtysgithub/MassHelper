@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MassHelper/Public/MassDumpCheatManager.h"
+#include "MassHelper/Public/Processor/MassProcessorDependencyPrinter.h"
 
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
@@ -36,11 +37,13 @@ void UMassDumpCheatManager::DumpStaticProcessorsDependencyByPhaseID(int PhaseID)
 			, *FString::Printf(TEXT("GMTmp_ProcessingPhase_%s"), *UEnum::GetDisplayValueAsText(Phase).ToString()));
 
 
-		FMassProcessorDependencySolver::FResult Result;
-		FMassPhaseProcessorConfigurationHelper Configurator(*PhaseProcessor, TargetPhaseConfig, *MassSimulationSubsystem, EMassProcessingPhase(PhaseID));
+		FMassProcessorDependencySolverPrinterImpl::FResult Result;
+		FMassPhaseProcessorDependencyPrinter Configurator(*PhaseProcessor, TargetPhaseConfig, *MassSimulationSubsystem, EMassProcessingPhase(PhaseID));
 		Configurator.bIsGameRuntime = false;
-		Configurator.Configure({}, /*EntityManager=*/nullptr, &Result);
 
-		//...
+		FString DependencyString;
+		Configurator.Print(DependencyString, {}, /*EntityManager=*/nullptr, &Result);
+
+		UE_LOG(LogMass, Log, TEXT("%s"), *DependencyString);
 	}
 }
