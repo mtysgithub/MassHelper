@@ -5,9 +5,23 @@ Content/
 DerivedDataCache/
 Intermediate/
 Platforms/
-Plugins/
+Source/CitySample/
+Source/CitySampleAnimGraphRuntime/
+Source/CitySampleEditor/
+Source/CitySample.Target.cs
+Source/CitySampleEditor.Target.cs
+Plugins/BrokenGlassEffects/
+Plugins/CitySampleMassCrowd/
+Plugins/CitySampleSensorGrid/
+Plugins/Crossfader/
+Plugins/HoverDrone/
+Plugins/RuleProcessor/
+Plugins/SoundScape/
+Plugins/Traffic/
+Plugins/WorldAudioDataSystem/
 Saved/
 Small_City/
+.vs/
 .vs/MatrixWorld/FileContentIndex/06a1d4bb-3603-4219-8905-074f0e4f1aec.vsidx
 .vs/MatrixWorld/FileContentIndex/2af71d52-023f-43a0-b02e-4793a985ad54.vsidx
 .vs/MatrixWorld/FileContentIndex/2e5cbd61-0ed7-4791-8753-9bf0ac32283c.vsidx
@@ -71,3 +85,5 @@ README.md
 readme.txt
 SideFX Labs.tps
 SideFXLabs_License.txt
+/Source/CitySample
+Source/CitySample/Game/CitySampleCheatManager.h

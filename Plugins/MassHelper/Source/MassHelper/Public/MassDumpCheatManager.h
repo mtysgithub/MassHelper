@@ -10,7 +10,7 @@
  * Extension of the CheatManager class that enables custom console commands and debug functions for development use.
  */
 UCLASS()
-class CITYSAMPLE_API UMassDumpCheatManager : public UCheatManager
+class MASSHELPER_API UMassDumpCheatManager : public UCheatManager
 {
 	GENERATED_BODY()
 
@@ -18,5 +18,5 @@ public:
 	UMassDumpCheatManager();
 
 	UFUNCTION(exec)
-	virtual void DumpPhaseProcessorByID(int PhaseID);
+	virtual void DumpStaticProcessorsDependencyByPhaseID(int PhaseID);
 };

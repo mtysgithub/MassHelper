@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CheatManager.h"
-#include "Tests/MassDump/MassDumpCheatManager.h"
+#include "MassHelper/Public/MassDumpCheatManager.h"
 #include "CitySampleCheatManager.generated.h"
 
 /**
