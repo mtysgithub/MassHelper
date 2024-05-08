@@ -12,6 +12,7 @@
 #include "MassEntitySettings.h"
 #include "MassSimulation/Public/MassSimulationSubsystem.h"
 #include "MassEntity/Public/MassEntitySubsystem.h"
+#include <Misc/FileHelper.h>
 
 UMassDumpCheatManager::UMassDumpCheatManager()
 {
@@ -20,8 +21,23 @@ UMassDumpCheatManager::UMassDumpCheatManager()
 
 void UMassDumpCheatManager::DumpStaticProcessorsDependencyByPhaseID(int PhaseID)
 { 
+	bool bRuntime = false;
+	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorsDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
+	DoDumpProcessorsDependency(PhaseID, ToSaveFileName);
+}
+
+void UMassDumpCheatManager::DumpRuntimeProcessorsDependencyByPhaseID(int PhaseID)
+{
+	bool bRuntime = true;
+	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorsDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
+	DoDumpProcessorsDependency(PhaseID, ToSaveFileName);
+}
+
+void UMassDumpCheatManager::DoDumpProcessorsDependency(int PhaseID, FString& ToSaveFileName)
+{
 	UMassSimulationSubsystem* MassSimulationSubsystem = UWorld::GetSubsystem<UMassSimulationSubsystem>(this->GetWorld());
-	if (ensure(MassSimulationSubsystem))
+	check(MassSimulationSubsystem);
+	if (MassSimulationSubsystem)
 	{
 		FMassProcessingPhaseManager& PhaseMannager = (FMassProcessingPhaseManager&)(MassSimulationSubsystem->GetPhaseManager());
 		FMassEntityManager& EntityManager = PhaseMannager.GetEntityManagerRef();
@@ -45,5 +61,7 @@ void UMassDumpCheatManager::DumpStaticProcessorsDependencyByPhaseID(int PhaseID)
 		Configurator.Print(DependencyString, {}, /*EntityManager=*/nullptr, &Result);
 
 		UE_LOG(LogMass, Log, TEXT("%s"), *DependencyString);
+		FString SavePath = FPaths::ProjectSavedDir() / ToSaveFileName;
+		FFileHelper::SaveStringToFile(DependencyString, *SavePath);
 	}
 }

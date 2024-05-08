@@ -66,27 +66,44 @@ void FMassProcessorDependencySolverPrinterImpl::Print(FString& OutputString)
     {
         auto& Node = AllNodes[i];
 
-        TArray<FName>& ExecuteBeforeNodes = Node.ExecuteBefore;
-        TArray<FName>& ExecuteAfterNodes = Node.ExecuteAfter;
         FString NodeName = Node.Name.ToString();
-
-        FString ExecuteBeforeStr = NameViewToString(ExecuteBeforeNodes);
-        FString ExecuteAfterStr = NameViewToString(ExecuteAfterNodes);
-
-        //FString TmpStr = FString::Printf(TEXT("%s | %s | %s"),
-        //    *ExecuteBeforeStr,
-        //    *NodeName,
-        //    *ExecuteAfterStr);
-
-        //UE_LOG(LogMass, Log, TEXT("%s"), *TmpStr);
-
         // Create a JSON object for this node
         TSharedPtr<FJsonObject> NodeJson = MakeShareable(new FJsonObject);
-
         // Add node name
         NodeJson->SetStringField(TEXT("NodeName"), NodeName);
         NodeJson->SetStringField(TEXT("Color"), Node.IsGroup() ? ("B") : ("R"));
 
+        /*------------------------------------------------------------------------------------------------*/
+
+        TArray<FName> OriginalDependencies;
+        for (int ParentIndex = 0; ParentIndex < Node.OriginalDependencies.Num(); ++ParentIndex)
+        {
+            auto& ParentNode = AllNodes[Node.OriginalDependencies[ParentIndex]];
+            OriginalDependencies.Add(ParentNode.Name);
+        }
+        TArray<TSharedPtr<FJsonValue>> OriginalDependenciesJsonArray;
+        for (const FName& ParentNode : OriginalDependencies)
+        {
+            OriginalDependenciesJsonArray.Add(MakeShareable(new FJsonValueString(ParentNode.ToString())));
+        }
+        NodeJson->SetArrayField(TEXT("OriginalDependencies"), OriginalDependenciesJsonArray);
+
+        TArray<FName> SubNodeIndices;
+        for (int SubNodeIndex = 0; SubNodeIndex < Node.SubNodeIndices.Num(); ++SubNodeIndex)
+        {
+            auto& SubNode = AllNodes[Node.SubNodeIndices[SubNodeIndex]];
+            SubNodeIndices.Add(SubNode.Name);
+        }
+        TArray<TSharedPtr<FJsonValue>> SubNodeIndicesJsonArray;
+        for (const FName& SubNode : SubNodeIndices)
+        {
+            SubNodeIndicesJsonArray.Add(MakeShareable(new FJsonValueString(SubNode.ToString())));
+        }
+        NodeJson->SetArrayField(TEXT("SubNodeIndices"), SubNodeIndicesJsonArray);
+
+        /*------------------------------------------------------------------------------------------------*/
+
+        TArray<FName>& ExecuteBeforeNodes = Node.ExecuteBefore;
         // Convert ExecuteBeforeNodes and ExecuteAfterNodes to JSON arrays
         TArray<TSharedPtr<FJsonValue>> ExecuteBeforeJsonArray;
         for (const FName& BeforeNode : ExecuteBeforeNodes)
@@ -95,12 +112,16 @@ void FMassProcessorDependencySolverPrinterImpl::Print(FString& OutputString)
         }
         NodeJson->SetArrayField(TEXT("ExecuteBeforeNodes"), ExecuteBeforeJsonArray);
 
+
+        TArray<FName>& ExecuteAfterNodes = Node.ExecuteAfter;
         TArray<TSharedPtr<FJsonValue>> ExecuteAfterJsonArray;
         for (const FName& AfterNode : ExecuteAfterNodes)
         {
             ExecuteAfterJsonArray.Add(MakeShareable(new FJsonValueString(AfterNode.ToString())));
         }
         NodeJson->SetArrayField(TEXT("ExecuteAfterNodes"), ExecuteAfterJsonArray);
+
+        /*------------------------------------------------------------------------------------------------*/
 
         // Add this node's JSON object to the array of nodes
         NodesArray.Add(MakeShareable(new FJsonValueObject(NodeJson)));
@@ -112,8 +133,4 @@ void FMassProcessorDependencySolverPrinterImpl::Print(FString& OutputString)
     // Convert the root JSON object to a string
     TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
     FJsonSerializer::Serialize(RootJson.ToSharedRef(), Writer);
-
-    // Optionally, add the JSON string to the ToString variable if you want to return it
-    OutputString.Append(TEXT("\nJSON Representation:\n"));
-    OutputString.Append(OutputString);
 }

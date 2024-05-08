@@ -19,4 +19,10 @@ public:
 
 	UFUNCTION(exec)
 	virtual void DumpStaticProcessorsDependencyByPhaseID(int PhaseID);
+
+	UFUNCTION(exec)
+	virtual void DumpRuntimeProcessorsDependencyByPhaseID(int PhaseID);
+
+private:
+	void DoDumpProcessorsDependency(int PhaseID, FString& ToSaveFileName);
 };
