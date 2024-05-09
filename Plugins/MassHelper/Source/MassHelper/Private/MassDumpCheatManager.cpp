@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "MassHelper/Public/MassDumpCheatManager.h"
-#include "MassHelper/Public/Processor/MassProcessorDependencyPrinter.h"
 
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
@@ -19,21 +18,28 @@ UMassDumpCheatManager::UMassDumpCheatManager()
 
 }
 
-void UMassDumpCheatManager::DumpStaticProcessorsDependencyByPhaseID(int PhaseID)
+void UMassDumpCheatManager::DumpStaticProcessorExecutesGroupTreeByPhaseID(int PhaseID)
+{
+	bool bRuntime = false;
+	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorExecutesGroupTree_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
+	DoPrint(PhaseID, ToSaveFileName, EPrintMode::ExecutesGroupTree);
+}
+
+void UMassDumpCheatManager::DumpStaticProcessorDependencyByPhaseID(int PhaseID)
 { 
 	bool bRuntime = false;
-	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorsDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
-	DoDumpProcessorsDependency(PhaseID, ToSaveFileName);
+	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
+	DoPrint(PhaseID, ToSaveFileName, EPrintMode::CompletelyDependency);
 }
 
-void UMassDumpCheatManager::DumpRuntimeProcessorsDependencyByPhaseID(int PhaseID)
+void UMassDumpCheatManager::DumpRuntimeProcessorDependencyByPhaseID(int PhaseID)
 {
 	bool bRuntime = true;
-	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorsDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
-	DoDumpProcessorsDependency(PhaseID, ToSaveFileName);
+	FString ToSaveFileName = FString::Printf(TEXT("Mass_ProcessorDependency_Phase%d_"), PhaseID) + ((bRuntime) ? ("Runtime.json") : ("Static.json"));
+	DoPrint(PhaseID, ToSaveFileName, EPrintMode::CompletelyDependency);
 }
 
-void UMassDumpCheatManager::DoDumpProcessorsDependency(int PhaseID, FString& ToSaveFileName)
+void UMassDumpCheatManager::DoPrint(int PhaseID, FString& ToSaveFileName, EPrintMode PrintMode)
 {
 	UMassSimulationSubsystem* MassSimulationSubsystem = UWorld::GetSubsystem<UMassSimulationSubsystem>(this->GetWorld());
 	check(MassSimulationSubsystem);
@@ -58,7 +64,7 @@ void UMassDumpCheatManager::DoDumpProcessorsDependency(int PhaseID, FString& ToS
 		Configurator.bIsGameRuntime = false;
 
 		FString DependencyString;
-		Configurator.Print(DependencyString, {}, /*EntityManager=*/nullptr, &Result);
+		Configurator.Print(PrintMode, DependencyString, {}, /*EntityManager=*/nullptr, &Result);
 
 		UE_LOG(LogMass, Log, TEXT("%s"), *DependencyString);
 		FString SavePath = FPaths::ProjectSavedDir() / ToSaveFileName;

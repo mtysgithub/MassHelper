@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CheatManager.h"
+#include "MassHelper/Public/Processor/MassProcessorDependencyPrinter.h"
 #include "MassDumpCheatManager.generated.h"
 
 /**
@@ -18,11 +19,14 @@ public:
 	UMassDumpCheatManager();
 
 	UFUNCTION(exec)
-	virtual void DumpStaticProcessorsDependencyByPhaseID(int PhaseID);
+	void DumpStaticProcessorExecutesGroupTreeByPhaseID(int PhaseID);
 
 	UFUNCTION(exec)
-	virtual void DumpRuntimeProcessorsDependencyByPhaseID(int PhaseID);
+	void DumpStaticProcessorDependencyByPhaseID(int PhaseID);
+
+	UFUNCTION(exec)
+	void DumpRuntimeProcessorDependencyByPhaseID(int PhaseID);
 
 private:
-	void DoDumpProcessorsDependency(int PhaseID, FString& ToSaveFileName);
+	void DoPrint(int PhaseID, FString& ToSaveFileName, EPrintMode PrintMode);
 };
