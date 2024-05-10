@@ -67,7 +67,7 @@ public:
             TSharedPtr<FJsonObject> NodeJson = MakeShareable(new FJsonObject);
             // Add node name
             NodeJson->SetStringField(TEXT("NodeName"), NodeName);
-            NodeJson->SetStringField(TEXT("Color"), Node.IsGroup() ? ("B") : ("R"));
+            NodeJson->SetStringField(TEXT("Color"), Node.IsGroup() ? ("blue") : ("red"));
 
             /*------------------------------------------------------------------------------------------------*/
 

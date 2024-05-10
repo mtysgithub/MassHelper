@@ -85,6 +85,10 @@ def main():
         for json_file in json_files:
             DrawG(json_file)
 
+def GetNickName(node_name):
+    # node_nickname = node_name.split(".")[-1]
+    # return node_nickname
+    return node_name
 
 def DrawG(json_file):
     # 读取JSON数据
@@ -118,31 +122,21 @@ def DrawG(json_file):
 
     # 按照排序后的顺序添加节点（只需节点名称）
     for node in data["Nodes"]:
-        if node['Color'] == 'B':
-            G.add_node(node["NodeName"], color='blue')
-            actual_edge_colors.append('blue')
+        if node['Color'] == 'blue':
+            G.add_node(node["NodeName"], color='blue', nickname=GetNickName(node["NodeName"]))
             for sub_node in node["SubNodeIndices"]:
-                if node_name_map[sub_node]['Color'] == 'B':
-                    G.add_node(sub_node, color='blue')
-                    actual_edge_colors.append('blue')
-
-                    sub_node_nickname = sub_node.split(".")[-1]
-                    node_nickname_labels[sub_node] = sub_node_nickname
-
-                else:
-                    G.add_node(sub_node, color='red')
-                    actual_edge_colors.append('red')
+                G.add_node(sub_node, color=node_name_map[sub_node]['Color'], nickname=GetNickName(sub_node))
                 G.add_edge(node["NodeName"], sub_node)
+                actual_edge_colors.append(node_name_map[sub_node]['Color'])
                 if sub_node in node_in_degree_map:
                     node_in_degree_map[sub_node] += 1
                 else:
                     node_in_degree_map[sub_node] = 1
         else:
-            G.add_node(node["NodeName"], color='red')
-            node_nickname_labels[node["NodeName"]] = node["NodeName"]
+            G.add_node(node["NodeName"], color='red', nickname=GetNickName(node["NodeName"]))
 
     #添加超节点
-    G.add_node("super", color='black')
+    G.add_node("super", color='black', nickname="super")
     for node in data["Nodes"]:
         if not (node['NodeName'] in node_in_degree_map) or (node_in_degree_map[node['NodeName']] == 0):
             G.add_edge("super", node['NodeName'], color='black')
@@ -161,16 +155,20 @@ def DrawG(json_file):
     for node_key in G.nodes():
         actual_nodes_colors.append(G.nodes[node_key]['color'])
 
-    if not nx.is_tree(G):
-    # if True:
+    #重命名
+    for node_key in G.nodes():
+        node_nickname_labels[node_key] = G.nodes[node_key]['nickname']
+
+    # if not nx.is_tree(G):
+    if True:
         # pos = nx.kamada_kawai_layout(G)  # 使用kamada_kawai_layout布局
-        pos = nx.spring_layout(G, k=0.55, iterations=50)
+        pos = nx.spring_layout(G, k=0.5, iterations=50)
         nx.draw(G, pos, with_labels=True, labels=node_nickname_labels, node_color=actual_nodes_colors, edge_color=actual_edge_colors, node_size=50000,
                 font_weight='bold', arrows=True,
                 arrowstyle='->', arrowsize=10, font_size=20, alpha=0.7)
     else:
         pos = hierarchy_pos(G, "super")
-        nx.draw(G, pos=pos, with_labels=True, labels=node_nickname_labels)
+        nx.draw(G, pos=pos, with_labels=True, labels=node_nickname_labels, node_color=actual_nodes_colors, edge_color=actual_edge_colors)
 
     # 显示图形
     # plt.show()
