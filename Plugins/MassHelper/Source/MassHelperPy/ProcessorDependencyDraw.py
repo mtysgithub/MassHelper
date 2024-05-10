@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import sys
 
@@ -123,7 +124,7 @@ def DrawG(json_file):
     # 按照排序后的顺序添加节点（只需节点名称）
     for node in data["Nodes"]:
         if node['Color'] == 'blue':
-            G.add_node(node["NodeName"], color='blue', nickname=GetNickName(node["NodeName"]))
+            G.add_node(node["NodeName"], color='blue' if len(node["OriginalDependencies"]) > 0 else "yellow", nickname=GetNickName(node["NodeName"]))
             for sub_node in node["SubNodeIndices"]:
                 G.add_node(sub_node, color=node_name_map[sub_node]['Color'], nickname=GetNickName(sub_node))
                 G.add_edge(node["NodeName"], sub_node)
@@ -159,16 +160,20 @@ def DrawG(json_file):
     for node_key in G.nodes():
         node_nickname_labels[node_key] = G.nodes[node_key]['nickname']
 
-    # if not nx.is_tree(G):
-    if True:
+    if not nx.is_tree(G):
+    # if True:
         # pos = nx.kamada_kawai_layout(G)  # 使用kamada_kawai_layout布局
-        pos = nx.spring_layout(G, k=0.5, iterations=50)
+        pos = nx.spring_layout(G, k=0.3, iterations=50)
         nx.draw(G, pos, with_labels=True, labels=node_nickname_labels, node_color=actual_nodes_colors, edge_color=actual_edge_colors, node_size=50000,
                 font_weight='bold', arrows=True,
                 arrowstyle='->', arrowsize=10, font_size=20, alpha=0.7)
     else:
-        pos = hierarchy_pos(G, "super")
-        nx.draw(G, pos=pos, with_labels=True, labels=node_nickname_labels, node_color=actual_nodes_colors, edge_color=actual_edge_colors)
+        pos = hierarchy_pos(G, "super", width=2 * math.pi, xcenter=0)
+        new_pos = {u: (r * math.cos(theta), r * math.sin(theta)) for u, (theta, r) in pos.items()}
+        nx.draw(G, pos=new_pos, with_labels=True, labels=node_nickname_labels, node_color=actual_nodes_colors, edge_color=actual_edge_colors, node_size=5000,
+                font_weight='bold', arrows=True,
+                arrowstyle='->', arrowsize=10, font_size=20, alpha=0.7)
+        # nx.draw_networkx_nodes(G, pos=new_pos)
 
     # 显示图形
     # plt.show()
