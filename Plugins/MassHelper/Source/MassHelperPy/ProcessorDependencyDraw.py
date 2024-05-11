@@ -121,33 +121,10 @@ def DrawG(json_file):
     for node in data["Nodes"]:
         node_name_map[node['NodeName']] = node
 
-    # 按照排序后的顺序添加节点（只需节点名称）
-    for node in data["Nodes"]:
-        if node['Color'] == 'blue':
-            G.add_node(node["NodeName"], color='blue' if len(node["OriginalDependencies"]) > 0 else "yellow", nickname=GetNickName(node["NodeName"]))
-            for sub_node in node["SubNodeIndices"]:
-                G.add_node(sub_node, color=node_name_map[sub_node]['Color'], nickname=GetNickName(sub_node))
-                G.add_edge(node["NodeName"], sub_node)
-                actual_edge_colors.append(node_name_map[sub_node]['Color'])
-                if sub_node in node_in_degree_map:
-                    node_in_degree_map[sub_node] += 1
-                else:
-                    node_in_degree_map[sub_node] = 1
-        else:
-            G.add_node(node["NodeName"], color='red', nickname=GetNickName(node["NodeName"]))
-
-    #添加超节点
-    G.add_node("super", color='black', nickname="super")
-    for node in data["Nodes"]:
-        if not (node['NodeName'] in node_in_degree_map) or (node_in_degree_map[node['NodeName']] == 0):
-            G.add_edge("super", node['NodeName'], color='black')
-
-    # 添加时序依赖
-    # for node in data["Nodes"]:
-    #     for after_node in node["ExecuteAfterNodes"]:
-    #         G.add_edge(node["NodeName"], after_node)
-    #     for before_node in node["ExecuteBeforeNodes"]:
-    #         G.add_edge(before_node, node["NodeName"])
+    if data['PrintMode'] == 'ExecutesGroupTree':
+        BuildExecutesGroupTreeDig(G, actual_edge_colors, data, node_in_degree_map, node_name_map)
+    elif data['PrintMode'] == 'CompletelyDependency':
+        BuildProcessorCompleteDependenciesDig(G, actual_edge_colors, data, node_in_degree_map, node_name_map)
 
     # 设置图形大小
     plt.figure(figsize=(350, 350))
@@ -180,6 +157,47 @@ def DrawG(json_file):
 
     file_name_no_extension = os.path.splitext(os.path.basename(json_file))[0]
     plt.savefig("./data/{0}.jpg".format(file_name_no_extension))
+
+
+def BuildExecutesGroupTreeDig(G, actual_edge_colors, data, node_in_degree_map, node_name_map):
+    for node in data["Nodes"]:
+        if node['Color'] == 'blue':
+            G.add_node(node["NodeName"], color='blue' if len(node["OriginalDependencies"]) > 0 else "yellow",
+                       nickname=GetNickName(node["NodeName"]))
+            for sub_node in node["SubNodeIndices"]:
+                G.add_node(sub_node, color=node_name_map[sub_node]['Color'], nickname=GetNickName(sub_node))
+                G.add_edge(node["NodeName"], sub_node)
+                actual_edge_colors.append(node_name_map[sub_node]['Color'])
+                if sub_node in node_in_degree_map:
+                    node_in_degree_map[sub_node] += 1
+                else:
+                    node_in_degree_map[sub_node] = 1
+        else:
+            G.add_node(node["NodeName"], color='red', nickname=GetNickName(node["NodeName"]))
+    # 添加超节点
+    G.add_node("super", color='black', nickname="super")
+    for node in data["Nodes"]:
+        if not (node['NodeName'] in node_in_degree_map) or (node_in_degree_map[node['NodeName']] == 0):
+            G.add_edge("super", node['NodeName'], color='black')
+    # 添加时序依赖
+    # for node in data["Nodes"]:
+    #     for after_node in node["ExecuteAfterNodes"]:
+    #         G.add_edge(node["NodeName"], after_node)
+    #     for before_node in node["ExecuteBeforeNodes"]:
+    #         G.add_edge(before_node, node["NodeName"])
+
+def BuildProcessorCompleteDependenciesDig(G, actual_edge_colors, data, node_in_degree_map, node_name_map):
+    for node in data["Nodes"]:
+        if node['Color'] == 'red':
+            G.add_node(node["NodeName"], color='red', nickname=GetNickName(node["NodeName"]))
+            for parent_node in node["OriginalDependencies"]:
+                G.add_node(parent_node, color=node_name_map[parent_node]['Color'], nickname=GetNickName(parent_node))
+                G.add_edge(parent_node, node["NodeName"])
+                actual_edge_colors.append(node_name_map[parent_node]['Color'])
+                if parent_node in node_in_degree_map:
+                    node_in_degree_map[parent_node] += 1
+                else:
+                    node_in_degree_map[parent_node] = 1
 
 
 if __name__ == "__main__":
